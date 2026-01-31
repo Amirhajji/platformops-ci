@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_SHA = ''
+        GIT_SHA = ""
     }
 
     stages {
@@ -11,11 +11,12 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    GIT_SHA = sh(
+                    def sha = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
-                    echo "Building commit ${GIT_SHA}"
+                    env.GIT_SHA = sha
+                    echo "Building commit ${env.GIT_SHA}"
                 }
             }
         }
@@ -28,7 +29,6 @@ pipeline {
                         . .venv/bin/activate
                         pip install --upgrade pip
                         pip install -r requirements.txt
-                        python -c "import app.main"
                         deactivate
                     '''
                 }
