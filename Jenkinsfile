@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GIT_SHA = ""
+        GIT_SHA = "unknown"
     }
 
     stages {
@@ -11,11 +11,10 @@ pipeline {
             steps {
                 checkout scm
                 script {
-                    def sha = sh(
+                    env.GIT_SHA = sh(
                         script: 'git rev-parse --short HEAD',
                         returnStdout: true
                     ).trim()
-                    env.GIT_SHA = sha
                     echo "Building commit ${env.GIT_SHA}"
                 }
             }
@@ -33,18 +32,18 @@ pipeline {
                     '''
                 }
 
-                sh '''
+                sh """
                     zip -r backend-${GIT_SHA}.zip backend \
                         -x "backend/.venv/*" \
                         -x "backend/__pycache__/*"
-                '''
+                """
             }
         }
     }
 
     post {
         success {
-            archiveArtifacts artifacts: 'backend-*.zip', fingerprint: true
+            archiveArtifacts artifacts: "backend-${GIT_SHA}.zip", fingerprint: true
         }
     }
 }
